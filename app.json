@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "despro-app",
-    "slug": "despro-app",
+    "name": "Heartip",
+    "slug": "Heartip",
+    "scheme": "Heartip",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,13 +17,18 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+      "package": "com.khaanca.desproapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "23e7e2db-6f32-43bf-9588-6aea870c9670"
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false
+      }
+    },
+    "owner": "khaanca"
   }
 }
