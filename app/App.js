@@ -12,7 +12,6 @@ import Toggle from "react-native-toggle-element";
 import { dataStatic, dataCalc } from "../assets/locale/data";
 import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
-import ecg from "../assets/images/ecgGraph.png";
 
 export default App = () => {
   const [toggleValue, setToggleValue] = useState(false);
@@ -20,12 +19,9 @@ export default App = () => {
   const text = dataStatic[language];
   const [connectButton, setConnectButton] = useState(false);
   const [connectValue, setConnectValue] = useState(text.bluetoothCon);
-  const [ecgBase, setEcgBase] = useState(ecg);
   const [quote, setQuote] = useState("Loading...");
   const [author, setAuthor] = useState("Loading...");
-  const [imageSrc, setImageSrc] = useState(
-    "https://random-image-pepebigotes.vercel.app/api/random-image"
-  );
+  const [imageSrc, setImageSrc] = useState("Loading...");
 
   const fetchQuote = () => {
     fetch("https://quotes-api-self.vercel.app/quote")
