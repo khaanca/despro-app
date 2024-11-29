@@ -5,11 +5,11 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import Toggle from "react-native-toggle-element";
 import { dataStatic, dataCalc } from "../assets/locale/data";
-import { SwipeButton } from "react-native-expo-swipe-button";
 import { printToFileAsync } from "expo-print";
 import { shareAsync } from "expo-sharing";
 import ecg from "../assets/images/ecgGraph.png";
@@ -19,19 +19,53 @@ export default App = () => {
   const language = toggleValue ? "ID" : "EN";
   const text = dataStatic[language];
   const [connectButton, setConnectButton] = useState(false);
+  const [connectValue, setConnectValue] = useState(text.bluetoothCon);
   const [ecgBase, setEcgBase] = useState(ecg);
+  const [quote, setQuote] = useState("Loading...");
+  const [author, setAuthor] = useState("Loading...");
+  const [imageSrc, setImageSrc] = useState(
+    "https://random-image-pepebigotes.vercel.app/api/random-image"
+  );
+
+  const fetchQuote = () => {
+    fetch("https://quotes-api-self.vercel.app/quote")
+      .then((response) => response.json())
+      .then((data) => {
+        setQuote(data.quote || "No quote available");
+        setAuthor(data.author || "No author available");
+      })
+      .catch((error) => {
+        console.error(error);
+        setQuote("Failed to load quote");
+      });
+  };
+
+  const refreshContent = async () => {
+    const uniqueUrl = `https://random-image-pepebigotes.vercel.app/api/random-image?${Date.now()}`;
+    setImageSrc(uniqueUrl);
+    fetchQuote();
+  };
+
+  useEffect(() => {
+    fetchQuote();
+  }, []);
+
+  useEffect(() => {
+    setConnectValue(connectButton ? text.bluetoothDone : text.bluetoothCon);
+  }, [text, connectButton]);
 
   const handleConnectButton = () => {
-    setConnectButton(true);
+    setConnectButton((prev) => !prev); // Toggle connectButton state
   };
 
   const html = `
     <html>
       <body>
         <h1>Heart Rate: ${dataCalc.hr} BPM</h1>
+        <h1>Blood Pressure: ${dataCalc.sistole}/${dataCalc.diastole}</h1>
         <h1>Blood Oxygen: ${dataCalc.oxygen}%</h1>
         <h1>Respiratory Rate: ${dataCalc.rr} BPM</h1>
-        <img src="${ecgBase}" alt="ECG Graph" style="width:100%; height:auto; max-width:400px;" />      </body>
+      </body>
     </html>
   `;
 
@@ -80,7 +114,7 @@ export default App = () => {
       </View>
       <Text style={styles.xlTitle}>{text.title}</Text>
       <View style={styles.row}>
-        <View style={styles.startButton}>
+        <View style={[styles.greenBubble, styles.gap]}>
           <Text style={styles.title}>{text.press}</Text>
           <Text style={styles.subtitle}>{text.toStart}</Text>
           <TouchableOpacity>
@@ -108,9 +142,42 @@ export default App = () => {
       </View>
       <View style={styles.row}>
         <View style={styles.greyBubble}>
-          <Image source={dataCalc.ecg} style={styles.graphSize} />
-          <Text style={styles.title}>{text.ecg}</Text>
+          <View style={styles.rateContainer}>
+            <Image
+              source={require("../assets/images/heartRate.png")}
+              style={{ width: 12, height: 12 }}
+            />
+            <Text style={[styles.smallBold, styles.redFont]}>{text.bp}</Text>
+          </View>
+          <View style={styles.bpContainer}>
+            <View style={styles.bpWrapper}>
+              <Text style={styles.hrCount}>{dataCalc.sistole}</Text>
+              <Text style={styles.countUnits}>SYS</Text>
+            </View>
+            <View style={styles.bpWrapper}>
+              <Text style={styles.hrCount}>{dataCalc.diastole}</Text>
+              <Text style={styles.countUnits}>DIA</Text>
+            </View>
+          </View>
         </View>
+        <TouchableOpacity style={styles.greenBubble} onPress={refreshContent}>
+          <View style={styles.quoteImage}>
+            <Image
+              style={{
+                width: 250,
+                height: 200,
+                borderRadius: 10,
+              }}
+              source={{
+                uri: imageSrc,
+              }}
+            />
+          </View>
+          <View style={styles.quoteContainer}>
+            <Text style={styles.quoteText}>"{quote}"</Text>
+            <Text style={styles.quoteAuthorText}>- {author}</Text>
+          </View>
+        </TouchableOpacity>
       </View>
       <View style={styles.row}>
         <View style={styles.rate}>
@@ -143,27 +210,18 @@ export default App = () => {
         </View>
       </View>
       <View style={styles.row}>
-        <View>
-          <SwipeButton
-            Icon={
-              <Image
-                source={require("../assets/images/bluetooth.png")}
-                style={{ width: 50, height: 50 }}
-              />
-            }
-            onComplete={handleConnectButton}
-            title={text.bluetoothCon}
-            titleStyle={{ color: "black", fontWeight: "bold" }}
-            borderRadius={100}
-            containerStyle={{
-              backgroundColor: "#F7E391",
-            }}
-            underlayStyle={{ backgroundColor: "#F7E391" }}
-            underlayTitle={text.bluetoothDone}
-            underlayTitleStyle={{ color: "black", fontWeight: "bold" }}
-            circleBackgroundColor="#F7E391"
-            width={550}
-          />
+        <View style={styles.connectWrapper}>
+          <TouchableOpacity onPress={handleConnectButton}>
+            <View
+              style={
+                connectButton ? styles.connectButtonDone : styles.connectButton
+              }
+            >
+              <Text style={[styles.title, styles.connectText]}>
+                {connectValue}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
         <View>
           <TouchableOpacity onPress={generatePdf}>
@@ -194,11 +252,10 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "stretch",
     gap: 10,
     width: "100%",
     marginBottom: 20,
-    flexWrap: "wrap",
   },
   header: {
     flexDirection: "row",
@@ -225,20 +282,46 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     padding: 16,
   },
-  startButton: {
+  greenBubble: {
     backgroundColor: "#D3E9C4",
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
+    height: "100%",
+    maxHeight: 380,
   },
   greyBubble: {
     backgroundColor: "#EAEAEA",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 15,
+    paddingBottom: 30,
     borderRadius: 10,
-    alignItems: "center",
     flexGrow: 1,
+  },
+  quoteContainer: {
+    flex: 0,
+    flexDirection: "column",
+    gap: 10,
+    justifyContent: "start",
+    alignItems: "start",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 10,
+  },
+  bpContainer: {
+    flex: 0,
+    flexDirection: "column",
+    gap: 10,
+    justifyContent: "start",
+    alignItems: "start",
+    backgroundColor: "white",
+    padding: 10,
+    marginTop: 10,
+  },
+  quoteText: {
+    color: "black",
+    fontSize: 15,
+    fontWeight: "bold",
+    maxWidth: 250,
   },
   graphSize: {
     width: "100%",
@@ -268,6 +351,22 @@ const styles = StyleSheet.create({
   rateImage: {
     width: 20,
     height: 20,
+  },
+  bpContainer: {
+    flex: 0,
+    flexDirection: "column",
+    gap: 10,
+    justifyContent: "start",
+    alignItems: "start",
+    backgroundColor: "white",
+    padding: 10,
+    marginTop: 10,
+  },
+  bpWrapper: {
+    flex: 0,
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
   },
   countContainer: {
     flex: 0,
@@ -299,6 +398,34 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     marginBottom: 5,
+  },
+  connectWrapper: {
+    width: 550,
+    borderRadius: 100,
+    backgroundColor: "#F7E391",
+    padding: 10,
+  },
+  connectButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    borderRadius: 100,
+    width: "100%",
+    height: 55,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  connectButtonDone: {
+    backgroundColor: "rgba(226, 199, 66, 0.5)",
+    borderRadius: 100,
+    width: "100%",
+    height: 55,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  connectText: {
+    textAlign: "center",
+    width: "100%",
   },
   shareWrapper: {
     backgroundColor: "#EAEAEA",

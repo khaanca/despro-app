@@ -5,7 +5,7 @@ export const dataStatic = {
     title: "Heart monitoring at your fingertip",
     press: "Press",
     toStart: "to start",
-    ecg: "Electrocardiogram Result",
+    bp: "Blood Pressure",
     heartRate: "Heart Rate",
     oxygen: "Blood Oxygen",
     respiratoryRate: "Respiratory Rate",
@@ -19,7 +19,7 @@ export const dataStatic = {
     title: "Pemantauan jantung dari jari Anda",
     press: "Mulai",
     toStart: "pemantauan",
-    ecg: "Hasil Elektrokardiogram",
+    bp: "Tekanan Darah",
     heartRate: "Detak Jantung",
     oxygen: "Oksigen Darah",
     respiratoryRate: "Laju Pernapasan",
@@ -31,8 +31,9 @@ export const dataStatic = {
 };
 
 export const dataCalc = {
-  hr: 120,
-  ecg: require("../images/ecgGraph.png"),
+  hr: 89,
+  sistole: 120,
+  diastole: 75,
   oxygen: 97,
   rr: 20,
 };
